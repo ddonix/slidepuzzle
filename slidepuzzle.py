@@ -37,15 +37,58 @@ def dis(x):
 			d += D[i][j][x[i][j]]
 	return d
 
+#0:上 1:下 2:左 3:右 其他：不操作
 def tran(x,s):
-	p0 = x[4][0]
-	p1 = x[4][1]
-	d  = x[4][2]
+	p0 = 0
+	p1 = 0
 	for i in s:
-		b +=1
-	return b
-	
+		p0 = x[4][0]
+		p1 = x[4][1]
+		if i == 0:
+			if p0 == 0:
+				continue
+			a = x[p0-1][p1]
+			b = D[p0][p1][a]+D[p0-1][p1][0]-D[p0][p1][0]-D[p0-1][p1][a]
+			x[4][2] += b
+			x[p0][p1] = a
+			x[p0-1][p1] = 0
+			x[4][0] = p0-1
+			x[4][1] = p1
+		elif i == 1:
+			if p0 == 3:
+				continue
+			a = x[p0+1][p1]
+			x[4][2] += D[p0][p1][a]+D[p0+1][p1][0]-D[p0][p1][0]-D[p0+1][p1][a]
+			x[p0][p1] = a
+			x[p0+1][p1] = 0
+			x[4][0] = p0+1
+			x[4][1] = p1
+		elif i == 2:
+			if p1 == 0:
+				continue
+			a = x[p0][p1-1]
+			x[4][2] += D[p0][p1][a]+D[p0][p1-1][0]-D[p0][p1][0]-D[p0][p1-1][a]
+			x[p0][p1] = a
+			x[p0][p1-1] = 0
+			x[4][0] = p0
+			x[4][1] = p1-1
+		elif i == 3:
+			if p1 == 3:
+				continue
+			a = x[p0][p1+1]
+			x[4][2] += D[p0][p1][a]+D[p0][p1+1][0]-D[p0][p1][0]-D[p0][p1+1][a]
+			x[p0][p1] = a
+			x[p0][p1+1] = 0
+			x[4][0] = p0
+			x[4][1] = p1+1
+		else:
+			continue
+	return
 
-show(X)
 print(D)
-print(dis(X))
+show(X)
+t = np.random.randint(5,size=300)
+print(t)
+tran(X,t)
+show(X)
+print(X[4])
