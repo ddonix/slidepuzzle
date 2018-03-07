@@ -200,18 +200,19 @@ class Tree:
             self.deep += 1
 
 #puzzle = np.array([[5,0,15,3],[8,1,2,6],[4,12,13,11],[9,14,7,10]])
-#puzzle = np.array(Target)
-#distance = dis(puzzle)
+puzzle = np.array(Target)
+distance = dis(puzzle)
 
-newp = np.array(Target)
-rufflePuzzle(newp, 500)
+#newp = np.array(Target)
+newp = np.array([puzzle[0],puzzle[1],puzzle[2],puzzle[3],[0,2,distance,4]])
+#rufflePuzzle(newp, 300)
 print(newp)
 
 newp[4][3] = 4
 m = Tree(newp)
 
 while m.root[4][2] != 0:
-    for i in np.arange(10):
+    for i in np.arange(12):
         m.addDeep()
     m = m.getMinDis()
     print(m.root)
