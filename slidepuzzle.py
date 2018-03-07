@@ -125,67 +125,30 @@ def nextPuzzle(x,s,new):
                 x[4][1] = p1+1
                 x[4][2] += b
                 x[4][3] = 2
-                
     return newP
 
 #rufflePuzzle:
-def rufflePuzzle(x,n):
-    newp = x
-    t = None
-    while(n>0):
-        n -= 1
-        t = nextPuzzle(newp, random.randint(0,3), False)
-        if t != None:
-            newp = t
-    return newp
-
-#0:上 1:下 2:左 3:右 其他：不操作
-def tran(x,s):
-	p0 = 0
-	p1 = 0
-	for i in s:
-		p0 = x[4][0]
-		p1 = x[4][1]
-		if i == 0:
-			if p0 == 0:
-				continue
-			a = x[p0-1][p1]
-			b = DistanceMatrix[p0][p1][a]+DistanceMatrix[p0-1][p1][0]-DistanceMatrix[p0][p1][0]-DistanceMatrix[p0-1][p1][a]
-			x[4][2] += b
-			x[p0][p1] = a
-			x[p0-1][p1] = 0
-			x[4][0] = p0-1
-			x[4][1] = p1
-		elif i == 1:
-			if p0 == 3:
-				continue
-			a = x[p0+1][p1]
-			x[4][2] += DistanceMatrix[p0][p1][a]+DistanceMatrix[p0+1][p1][0]-DistanceMatrix[p0][p1][0]-DistanceMatrix[p0+1][p1][a]
-			x[p0][p1] = a
-			x[p0+1][p1] = 0
-			x[4][0] = p0+1
-			x[4][1] = p1
-		elif i == 2:
-			if p1 == 0:
-				continue
-			a = x[p0][p1-1]
-			x[4][2] += DistanceMatrix[p0][p1][a]+DistanceMatrix[p0][p1-1][0]-DistanceMatrix[p0][p1][0]-DistanceMatrix[p0][p1-1][a]
-			x[p0][p1] = a
-			x[p0][p1-1] = 0
-			x[4][0] = p0
-			x[4][1] = p1-1
-		elif i == 3:
-			if p1 == 3:
-				continue
-			a = x[p0][p1+1]
-			x[4][2] += DistanceMatrix[p0][p1][a]+DistanceMatrix[p0][p1+1][0]-DistanceMatrix[p0][p1][0]-DistanceMatrix[p0][p1+1][a]
-			x[p0][p1] = a
-			x[p0][p1+1] = 0
-			x[4][0] = p0
-			x[4][1] = p1+1
-		else:
-			continue
-	return
+def rufflePuzzle(x,d):
+    
+    while(x[4][2] < d):
+        
+        p0 = x[4][0]
+        p1 = x[4][1]
+        ps = x[4][3]
+        
+        while(True):
+            s = random.randint(0,3)
+            if s == 0 and (ps == 1 or p0 == 0):
+                continue
+            if s == 1 and (ps == 0 or p0 == 3):
+                continue
+            if s == 2 and (ps == 3 or p1 == 0):
+                continue
+            if s == 3 and (ps == 2 or p1 == 3):
+                continue
+            else:
+                break
+        nextPuzzle(x, s, False)
 
 class Tree:
     def __init__(self,r):
@@ -209,7 +172,7 @@ class Tree:
             if(p0 == 0):
                 self.child[0] = None
                 
-
 show(Target)
-rufflePuzzle(Target, 400)
-print(Target)
+newp = np.array(Target)
+rufflePuzzle(newp, 40)
+print(newp)
