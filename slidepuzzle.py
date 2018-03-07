@@ -8,8 +8,6 @@ Target = np.array([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,0],[3,3,0,4]])
 
 #距离矩阵：表示[4][4]矩阵每一位距离正确的数的距离
 DistanceMatrix = np.empty([4,4,16],dtype='int32')
-
-
 for i in [0,1,2,3]:
     for j in [0,1,2,3]:
         for k in np.arange(16):
@@ -21,7 +19,12 @@ for i in [0,1,2,3]:
                 j2 = (k-1)%4
             DistanceMatrix[i][j][k] = abs(i2-i) + abs(j2-j)
 
-            
+def dis(x):
+	d = 0
+	for i in [0,1,2,3]:
+		for j in [0,1,2,3]:
+			d += DistanceMatrix[i][j][x[i][j]]*(16 - i*4-j)
+	return d
 
 def show(x):
 	print("%2d %2d %2d %2d"%(x[0][0],x[0][1],x[0][2],x[0][3]))
@@ -29,13 +32,6 @@ def show(x):
 	print("%2d %2d %2d %2d"%(x[2][0],x[2][1],x[2][2],x[2][3]))
 	print("%2d %2d %2d %2d"%(x[3][0],x[3][1],x[3][2],x[3][3]))
 	return
-
-def dis(x):
-	d = 0
-	for i in [0,1,2,3]:
-		for j in [0,1,2,3]:
-			d += DistanceMatrix[i][j][x[i][j]]
-	return d
 
 #0:上 1:下 2:左 3:右 其他：不操作
 def nextPuzzle(x,s,new):
@@ -53,14 +49,14 @@ def nextPuzzle(x,s,new):
                 newP[p0-1][p1] = 0
                 newP[4][0] = p0-1
                 newP[4][1] = p1
-                newP[4][2] = x[4][2]+b
+                newP[4][2] = dis(newP)
                 newP[4][3] = 0
             else:
                 x[p0][p1] = a
                 x[p0-1][p1] = 0
                 x[4][0] = p0-1
                 x[4][1] = p1
-                x[4][2] += b
+                x[4][2] = dis(x)
                 x[4][3] = 0
         
     elif s == 1:
@@ -74,14 +70,14 @@ def nextPuzzle(x,s,new):
                 newP[p0+1][p1] = 0
                 newP[4][0] = p0+1
                 newP[4][1] = p1
-                newP[4][2] = x[4][2]+b
+                newP[4][2] = dis(newP)
                 newP[4][3] = 1
             else:
                 x[p0][p1] = a
                 x[p0+1][p1] = 0
                 x[4][0] = p0+1
                 x[4][1] = p1
-                x[4][2] += b
+                x[4][2] = dis(x) 
                 x[4][3] = 1
 		
     elif s == 2:
@@ -95,14 +91,14 @@ def nextPuzzle(x,s,new):
                 newP[p0][p1-1] = 0
                 newP[4][0] = p0
                 newP[4][1] = p1-1
-                newP[4][2] = x[4][2]+b
+                newP[4][2] = dis(newP)
                 newP[4][3] = 2
             else:
                 x[p0][p1] = a
                 x[p0][p1-1] = 0
                 x[4][0] = p0
                 x[4][1] = p1-1
-                x[4][2] += b
+                x[4][2] = dis(x) 
                 x[4][3] = 2
                 
     elif s == 3:
@@ -116,18 +112,18 @@ def nextPuzzle(x,s,new):
                 newP[p0][p1+1] = 0
                 newP[4][0] = p0
                 newP[4][1] = p1+1
-                newP[4][2] = x[4][2]+b
+                newP[4][2] = dis(newP)
                 newP[4][3] = 2
             else:
                 x[p0][p1] = a
                 x[p0][p1+1] = 0
                 x[4][0] = p0
                 x[4][1] = p1+1
-                x[4][2] += b
+                x[4][2] = dis(x)
                 x[4][3] = 2
     return newP
 
-#rufflePuzzle:
+#rufflePuzzle:洗牌函数:d是复杂度
 def rufflePuzzle(x,d):
     
     while(x[4][2] < d):
@@ -156,23 +152,73 @@ class Tree:
         self.deep = 1
         self.child = [None,None,None,None]
 
-    def getDeep(self):
-        return self.deep
-
     def printTree(self):#深度遍历
         show(self.root)
+        print(self.root[4])
         for i in [0,1,2,3]:
             if(self.child[i] != None):
-                printTree(self)
+                self.child[i].printTree()
+
+    def getMinDis(self):
+        if self.deep == 1:
+            return self
+        else:
+            r = self
+            for i in [0,1,2,3]:
+                if self.child[i] != None:
+                    rr = self.child[i].getMinDis()
+                    if rr.root[4][2] < r.root[4][2]:
+                        r = rr
+                    elif rr.root[4][2] == r.root[4][2]:
+                        r == rr
+            return r
+
 
     def addDeep(self):#增加一层遍历
-        if(self.deep == 1):
-            p0 = self.root[3][3][0]
-            p1 = self.root[3][3][1]
-            if(p0 == 0):
-                self.child[0] = None
-                
-show(Target)
+        if self.deep == 1:
+            p0 = self.root[4][0]
+            p1 = self.root[4][1]
+            ps = self.root[4][3]
+            c = [True,True,True,True]
+            
+            if ps == 0:
+                c[1] = False
+            elif ps == 1:
+                c[0] = False
+            elif ps == 2:
+                c[3] = False
+            elif ps == 3:
+                c[2] = False
+
+            if p0 == 0:
+                c[0] = False
+            if p0 == 3:
+                c[1] = False
+            if p1 == 0:
+                c[2] = False
+            if p1 == 3:
+                c[3] = False
+            for s in [0,1,2,3]:
+                if c[s] == True:
+                    ctmp = nextPuzzle(self.root, s, True)
+                    self.child[s] = Tree(ctmp) 
+            self.deep += 1
+        else:
+            for s in [0,1,2,3]:
+                if self.child[s] != None:
+                    self.child[s].addDeep()
+            self.deep += 1
+
 newp = np.array(Target)
-rufflePuzzle(newp, 40)
+rufflePuzzle(newp, 200)
 print(newp)
+
+newp[4][3] = 4
+m = Tree(newp)
+
+while m.root[4][2] != 0:
+    for i in [0,1,2,3,4,5,6,7,8,9,10,11]:
+        m.addDeep()
+    m = m.getMinDis()
+    print(m.root)
+    m = Tree(m.root)
