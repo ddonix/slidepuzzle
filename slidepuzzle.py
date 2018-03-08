@@ -207,7 +207,7 @@ newp = np.array(Target)
 rufflePuzzle(newp, 500)
 print(newp)
 
-newp[4][3] = 4
+newp[4][3] = 44
 m = Tree(newp)
 
 while m.root[4][2] != 0:
