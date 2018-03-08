@@ -46,7 +46,7 @@ class spuzzleTree(spuzzle):
         self.display()
         print("deep %d"%self.deep)
         for c in self.child:
-            c[1].printTree()
+            c.printTree()
 
     def __addDeep(self):#增加一层遍历
         if self.child == []:
@@ -60,14 +60,14 @@ class spuzzleTree(spuzzle):
                 if c.distance < self.min.distance:
                     self.min = c
                 
-                self.child.append([s,c])
+                self.child.append(c)
         else:
             for c in self.child:
-                c[1].__addDeep()
-                if c[1].min.distance < self.min.distance:
-                    self.min = c[1].min
-                if c[1].maxdeep > self.maxdeep:
-                    self.maxdeep = c[1].maxdeep
+                c.__addDeep()
+                if c.min.distance < self.min.distance:
+                    self.min = c.min
+                if c.maxdeep > self.maxdeep:
+                    self.maxdeep = c.maxdeep
     
     def addDeep(self, d):#增加一层遍历
         while d > 0:
