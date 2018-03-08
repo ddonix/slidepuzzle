@@ -33,7 +33,7 @@ class spuzzle:
 
 class spuzzleTree(spuzzle):
     initsearch = 8
-    maxsearch  = 12
+    maxsearch  = 11
 
     def __init__(self,p,dis, prev):
         spuzzle.__init__(self, p, dis, prev)
@@ -43,7 +43,7 @@ class spuzzleTree(spuzzle):
         self.min = self
         self.maxdeep = 1
         
-    def optweight(self):
+    def optweight(self, parm):
         raise NotImplementedError
 
     def writeweight(self):
@@ -107,7 +107,7 @@ class spuzzleTree(spuzzle):
 
             if tmp.distance == result.distance:
                 print("解谜失败")
-                self.optweight()
+                self.optweight(result)
                 self.writeweight()
                 return
             else:
@@ -134,12 +134,18 @@ class spuzzle_4X4(spuzzleTree):
             i = self.data[v]
             self.data2[i] = v
     
-    def optweight(self):
-        return
+    def optweight(self, parm):
+        parm.display()
+        for v in np.arange(15):
+            p = parm.data[v]
+            i1 = v/4
+            j1 = v%4
+            i2 = p/4
+            j2 = p%4
+            spuzzle_4X4.weight[v] += abs(i1-i2)+abs(j1-j2)
     
     def writeweight(self):
         f = open('./puzzleweight.txt', 'wb')
-        spuzzle_4X4.weight[0] += 10
         pickle.dump(spuzzle_4X4.weight, f)
         f.close()
         return
