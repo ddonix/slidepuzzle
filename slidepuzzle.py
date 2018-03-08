@@ -34,6 +34,7 @@ class spuzzle:
 class spuzzleTree(spuzzle):
     initsearch = 8
     maxsearch  = 11
+    weight = None
 
     def __init__(self,p,dis, prev):
         spuzzle.__init__(self, p, dis, prev)
@@ -51,6 +52,7 @@ class spuzzleTree(spuzzle):
     
     @classmethod
     def trainweight(cls, block, count):
+        print("....学习weight...")
         puzzle = cls.randompuzzle()
         puzzle.display()
 
@@ -120,16 +122,19 @@ class spuzzleTree(spuzzle):
         print("over")
         
 class spuzzle_4X4(spuzzleTree):
-    weight = np.empty([15],dtype='int32')
-    if os.path.exists('./puzzleweight.txt'):
-        f = open('./puzzleweight.txt', 'r')
-        weight = pickle.load(f)
-        f.close()
-    else:
-        for i in np.arange(15):
-            weight[i] = 1
-    print("spuzzle_4X4.weight")
-    print(weight)
+    
+    @staticmethod
+    def readweight():
+        spuzzle_4X4.weight = np.empty([15],dtype='int32')
+        if os.path.exists('./puzzleweight.txt'):
+            f = open('./puzzleweight.txt', 'r')
+            spuzzle_4X4.weight = pickle.load(f)
+            f.close()
+        else:
+            for i in np.arange(15):
+                spuzzle_4X4.weight[i] = 1
+        print("读取weight")
+        print(spuzzle_4X4.weight)
 
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
@@ -262,12 +267,15 @@ class spuzzle_4X4(spuzzleTree):
             self.move(s)
             count -= 1
 
-spuzzle_4X4.trainweight(10,10)
-
-for i in np.arange(1):
-    p = spuzzle_4X4.randompuzzle()
-    p.prevstep = 4
-    print("......迷宫......")
-    p.display()
-    print("开始解谜")
-    p.solvepuzzle()
+def main():
+    spuzzle_4X4.readweight()
+    spuzzle_4X4.trainweight(10,10)
+    
+    print("...解谜...")
+    for i in np.arange(1):
+        p = spuzzle_4X4.randompuzzle()
+        p.prevstep = 4
+        print("...迷宫...")
+        p.display()
+        p.solvepuzzle()
+main()
