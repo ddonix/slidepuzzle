@@ -81,8 +81,7 @@ def nextPuzzle(x,s,new):
     
     if s == 0:
         if p0 != 0:
-            a = x[p0-1][p1]
-            b = disS(p0,p1,a)+disS(p0-1,p1,15)-disS(p0,p1,15)-disS(p0-1,p1,a)
+            a = x[p0-1][p1] b = disS(p0,p1,a)+disS(p0-1,p1,15)-disS(p0,p1,15)-disS(p0-1,p1,a)
             
             newP[p0][p1] = a
             newP[p0-1][p1] = 15
