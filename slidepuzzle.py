@@ -48,6 +48,11 @@ class spuzzleTree(spuzzle):
 
     def writeweight(self):
         raise NotImplementedError
+    
+    @classmethod
+    def trainweight(cls, block, count):
+        puzzle = cls.randompuzzle()
+        puzzle.display()
 
     def printTree(self):#深度遍历
         self.display()
@@ -81,6 +86,7 @@ class spuzzleTree(spuzzle):
             d -= 1
             self.__addDeep()
     
+
     def solvepuzzle(self):
         result = self
         
@@ -107,8 +113,6 @@ class spuzzleTree(spuzzle):
 
             if tmp.distance == result.distance:
                 print("解谜失败")
-                self.optweight(result)
-                self.writeweight()
                 return
             else:
                 result = tmp
@@ -126,7 +130,7 @@ class spuzzle_4X4(spuzzleTree):
             weight[i] = 1
     print("spuzzle_4X4.weight")
     print(weight)
-    
+
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
@@ -134,16 +138,14 @@ class spuzzle_4X4(spuzzleTree):
             i = self.data[v]
             self.data2[i] = v
     
-    def optweight(self, parm):
-        parm.display()
-        for v in np.arange(15):
-            p = parm.data[v]
-            i1 = v/4
-            j1 = v%4
-            i2 = p/4
-            j2 = p%4
-            spuzzle_4X4.weight[v] += abs(i1-i2)+abs(j1-j2)
-    
+    @staticmethod
+    def randompuzzle():
+        Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        p = spuzzle_4X4(Target, dis=None, prev=4)
+        p.ruffle(300)
+        p.prevstep = 4
+        return p
+
     def writeweight(self):
         f = open('./puzzleweight.txt', 'wb')
         pickle.dump(spuzzle_4X4.weight, f)
@@ -260,10 +262,12 @@ class spuzzle_4X4(spuzzleTree):
             self.move(s)
             count -= 1
 
-Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-p = spuzzle_4X4(Target, dis=None, prev=4)
-p.ruffle(300)
-p.prevstep = 4
-p.display()
-print("开始解谜")
-p.solvepuzzle()
+spuzzle_4X4.trainweight(10,10)
+
+for i in np.arange(1):
+    p = spuzzle_4X4.randompuzzle()
+    p.prevstep = 4
+    print("......迷宫......")
+    p.display()
+    print("开始解谜")
+    p.solvepuzzle()
