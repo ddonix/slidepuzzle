@@ -35,6 +35,7 @@ class spuzzleTree(spuzzle):
         self.deep = 1
         self.child = []
         self.father = self
+        self.min = self
     
     def printTree(self):#深度遍历
         self.display()
@@ -42,8 +43,6 @@ class spuzzleTree(spuzzle):
         for c in self.child:
             c[1].printTree()
 
-        
-    
     def __addDeep(self):#增加一层遍历
         if self.child == []:
             steps = self.getsteps()
@@ -52,11 +51,16 @@ class spuzzleTree(spuzzle):
                 c.deep = self.deep + 1
                 c.child = []
                 c.father = self
+
+                if c.distance < self.min.distance:
+                    self.min = c
                 
                 self.child.append([s,c])
         else:
             for c in self.child:
                 c[1].__addDeep()
+                if c[1].min.distance < self.min.distance:
+                    self.min = c[1].min
     
     def addDeep(self, d):#增加一层遍历
         while d > 0:
@@ -64,26 +68,24 @@ class spuzzleTree(spuzzle):
             self.__addDeep()
     
     def getmin(self):
-        if self.child == []:
-            return self
-        else:
-            r = self
-            for c in self.child:
-                rr = c[1].getmin()
-                if rr.distance < r.distance:
-                    r = rr
-            return r
-
+        return self.min
+    
     def solvepuzzle(self):
         result = self
         
         d = 12
         while result.distance != 0:
             result.addDeep(d)
-            result = result.getmin()
+            tmp = result.getmin()
+            tmp.display()
+            if tmp.distance == result.distance:
+                print("解谜失败")
+                break
+            else:
+                result = tmp
             result.display()
         
-        print("solve")
+        print("over")
         
 
 class spuzzle_4X4(spuzzleTree):
