@@ -26,32 +26,37 @@ class spuzzle:
     def getdistance(self):
         raise NotImplementedError
     
-    def nextpuzzle(self, s, new):
+    def newpuzzle(self, s):
         raise NotImplementedError
 
 class spuzzleTree(spuzzle):
     def __init__(self,p,dis, prev):
         spuzzle.__init__(self, p, dis, prev)
         self.deep = 1
-        self.child = [] 
+        self.child = []
+        self.father = self
     
     def printTree(self):#深度遍历
         self.display()
         print("deep %d"%self.deep)
         for c in self.child:
             c[1].printTree()
+
+        
     
     def __addDeep(self):#增加一层遍历
-        if self.deep == 1:
+        if self.child == []:
             steps = self.getsteps()
             for s in steps:
                 c = self.newpuzzle(s)
+                c.deep = self.deep + 1
+                c.child = []
+                c.father = self
+                
                 self.child.append([s,c])
-            self.deep += 1
         else:
             for c in self.child:
                 c[1].__addDeep()
-            self.deep += 1
     
     def addDeep(self, d):#增加一层遍历
         while d > 0:
@@ -59,7 +64,7 @@ class spuzzleTree(spuzzle):
             self.__addDeep()
     
     def getmin(self):
-        if self.deep == 1:
+        if self.child == []:
             return self
         else:
             r = self
@@ -67,18 +72,17 @@ class spuzzleTree(spuzzle):
                 rr = c[1].getmin()
                 if rr.distance < r.distance:
                     r = rr
-                elif rr.distance == r.distance:
-                    r == rr
             return r
 
     def solvepuzzle(self):
         result = self
         
+        d = 12
         while result.distance != 0:
-            result.addDeep(10)
-        
+            result.addDeep(d)
             result = result.getmin()
             result.display()
+        
         print("solve")
         
 
