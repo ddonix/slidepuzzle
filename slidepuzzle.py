@@ -75,18 +75,28 @@ class spuzzleTree(spuzzle):
             self.__addDeep()
     
     def solvepuzzle(self):
+        d = 8
         result = self
         
-        d = 12
         while result.distance != 0:
             result.addDeep(d)
             tmp = result.min
-            tmp.display()
             if tmp.distance == result.distance:
-                print("解谜失败")
-                break
+                i = 1
+                while d+i <= 12:
+                    result.addDeep(1)
+                    tmp = result.min
+                    if  tmp.distance < result.distance:
+                        break
+                if d+i > 12:
+                    print("解谜失败")
+                    return
+                else:
+                    result = tmp
+                    result.display()
             else:
                 result = tmp
+                result.display()
         print("over")
         
 
