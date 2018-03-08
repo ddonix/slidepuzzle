@@ -32,8 +32,8 @@ class spuzzle:
         raise NotImplementedError
 
 class spuzzleTree(spuzzle):
-    initsearch = 5
-    maxsearch  = 6
+    initsearch = 8
+    maxsearch  = 12
     weight = None
 
     def __init__(self,p,dis, prev):
@@ -292,7 +292,7 @@ class spuzzle_4X4(spuzzleTree):
 
 def main():
     spuzzle_4X4.readweight()
-    spuzzle_4X4.trainweight(2,2)
+    spuzzle_4X4.trainweight(10,1)
     print("...学习后weight...")
     print(spuzzle_4X4.weight)
     print("...解谜...")
