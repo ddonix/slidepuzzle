@@ -2,6 +2,8 @@
 # -*- coding:utf-8 -*- 
 import numpy as np 
 import random
+import cPickle as pickle
+import os
 
 class spuzzle:
     def __init__(self,p, dis=None, prev=None):
@@ -31,8 +33,7 @@ class spuzzle:
 
 class spuzzleTree(spuzzle):
     initsearch = 8
-    maxsearch  = 13
-    maxdeep    = 80
+    maxsearch  = 12
 
     def __init__(self,p,dis, prev):
         spuzzle.__init__(self, p, dis, prev)
@@ -41,7 +42,13 @@ class spuzzleTree(spuzzle):
         self.father = self
         self.min = self
         self.maxdeep = 1
-    
+        
+    def optweight(self):
+        raise NotImplementedError
+
+    def writeweight(self):
+        raise NotImplementedError
+
     def printTree(self):#深度遍历
         self.display()
         print("deep %d"%self.deep)
@@ -100,30 +107,26 @@ class spuzzleTree(spuzzle):
 
             if tmp.distance == result.distance:
                 print("解谜失败")
+                self.optweight()
+                self.writeweight()
                 return
             else:
                 result = tmp
                 result.display()
         print("over")
         
-
 class spuzzle_4X4(spuzzleTree):
     weight = np.empty([15],dtype='int32')
-    weight[11] = weight[14] = 3
-    weight[10] = 9
-    weight[13] =  27
-    weight[9] =  81
-    weight[12] =  243
-    weight[8] =  729
-    weight[7] =  729*3
-    weight[6] =  729*9
-    weight[5] =  729*27
-    weight[4] =  729*81
-    weight[3] = 729*243
-    weight[2] =  729*729
-    weight[1] =  729*729*3
-    weight[0] =  729*729*9
-
+    if os.path.exists('./puzzleweight.txt'):
+        f = open('./puzzleweight.txt', 'r')
+        weight = pickle.load(f)
+        f.close()
+    else:
+        for i in np.arange(15):
+            weight[i] = 1
+    print("spuzzle_4X4.weight")
+    print(weight)
+    
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
@@ -131,6 +134,16 @@ class spuzzle_4X4(spuzzleTree):
             i = self.data[v]
             self.data2[i] = v
     
+    def optweight(self):
+        return
+    
+    def writeweight(self):
+        f = open('./puzzleweight.txt', 'wb')
+        spuzzle_4X4.weight[0] += 10
+        pickle.dump(spuzzle_4X4.weight, f)
+        f.close()
+        return
+
     def display(self):
         show = np.empty([4,4], dtype='int32')
         for i in [0,1,2,3]:
@@ -188,7 +201,6 @@ class spuzzle_4X4(spuzzleTree):
         d1 = (abs(i1-i)+abs(j1-j))*spuzzle_4X4.weight[v]
         d2 = (abs(i2-i)+abs(j2-j))*spuzzle_4X4.weight[v]
         return d2-d1
-
 
     def move(self, s):
         p = self.data[15]
