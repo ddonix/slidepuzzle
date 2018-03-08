@@ -31,7 +31,7 @@ class spuzzle:
 
 class spuzzleTree(spuzzle):
     initsearch = 8
-    maxsearch  = 12
+    maxsearch  = 13
     maxdeep    = 80
 
     def __init__(self,p,dis, prev):
@@ -75,25 +75,32 @@ class spuzzleTree(spuzzle):
             self.__addDeep()
     
     def solvepuzzle(self):
-        d = 8
         result = self
         
         while result.distance != 0:
-            result.addDeep(d)
+            while True:
+                result.addDeep(1)
+                if result.maxdeep - result.deep < spuzzleTree.initsearch:
+                    continue
+                else:
+                    break
+                
             tmp = result.min
+            
             if tmp.distance == result.distance:
-                i = 1
-                while d+i <= 12:
+                while True:
                     result.addDeep(1)
                     tmp = result.min
-                    if  tmp.distance < result.distance:
+                    if tmp.distance < result.distance:
                         break
-                if d+i > 12:
-                    print("解谜失败")
-                    return
-                else:
-                    result = tmp
-                    result.display()
+                    elif result.maxdeep - result.deep == spuzzleTree.maxsearch:
+                        break
+                    else:
+                        continue
+
+            if tmp.distance == result.distance:
+                print("解谜失败")
+                return
             else:
                 result = tmp
                 result.display()
