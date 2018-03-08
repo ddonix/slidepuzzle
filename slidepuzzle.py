@@ -32,8 +32,8 @@ class spuzzle:
         raise NotImplementedError
 
 class spuzzleTree(spuzzle):
-    initsearch = 8
-    maxsearch  = 11
+    initsearch = 5
+    maxsearch  = 6
     weight = None
 
     def __init__(self,p,dis, prev):
@@ -44,18 +44,30 @@ class spuzzleTree(spuzzle):
         self.min = self
         self.maxdeep = 1
         
-    def optweight(self, parm):
-        raise NotImplementedError
-
     def writeweight(self):
         raise NotImplementedError
     
     @classmethod
     def trainweight(cls, block, count):
         print("....学习weight...")
-        puzzle = cls.randompuzzle()
-        puzzle.display()
+        while count > 0:
+            count -= 1
+            tmplist = []
 
+            b = 0
+            while b < block:
+                while True:
+                    puzzle = cls.randompuzzle()
+                    puzzle.display()
+                    tmp = puzzle.solvepuzzle()
+                    if tmp == None:
+                        continue
+                    tmplist.append(tmp)
+                    break
+                b += 1
+            puzzle.optweight(tmplist)
+            puzzle.writeweight()
+    
     def printTree(self):#深度遍历
         self.display()
         print("deep %d"%self.deep)
@@ -115,11 +127,12 @@ class spuzzleTree(spuzzle):
 
             if tmp.distance == result.distance:
                 print("解谜失败")
-                return
+                return tmp
             else:
                 result = tmp
                 result.display()
         print("over")
+        return None
         
 class spuzzle_4X4(spuzzleTree):
     
@@ -142,6 +155,16 @@ class spuzzle_4X4(spuzzleTree):
         for v in np.arange(16):
             i = self.data[v]
             self.data2[i] = v
+    
+    def optweight(self, parm):
+        for tmp in parm:
+            for v in np.arange(15):
+                p = tmp.data[v]
+                i1 = v/4
+                j1 = v%4
+                i2 = p/4
+                j2 = p%4
+                spuzzle_4X4.weight[v] += abs(i1-i2)+abs(j1-j2)
     
     @staticmethod
     def randompuzzle():
@@ -269,8 +292,9 @@ class spuzzle_4X4(spuzzleTree):
 
 def main():
     spuzzle_4X4.readweight()
-    spuzzle_4X4.trainweight(10,10)
-    
+    spuzzle_4X4.trainweight(2,2)
+    print("...学习后weight...")
+    print(spuzzle_4X4.weight)
     print("...解谜...")
     for i in np.arange(1):
         p = spuzzle_4X4.randompuzzle()
