@@ -30,12 +30,17 @@ class spuzzle:
         raise NotImplementedError
 
 class spuzzleTree(spuzzle):
+    initsearch = 8
+    maxsearch  = 12
+    maxdeep    = 80
+
     def __init__(self,p,dis, prev):
         spuzzle.__init__(self, p, dis, prev)
         self.deep = 1
         self.child = []
         self.father = self
         self.min = self
+        self.maxdeep = 1
     
     def printTree(self):#深度遍历
         self.display()
@@ -48,7 +53,7 @@ class spuzzleTree(spuzzle):
             steps = self.getsteps()
             for s in steps:
                 c = self.newpuzzle(s)
-                c.deep = self.deep + 1
+                self.maxdeep = c.deep = self.deep + 1
                 c.child = []
                 c.father = self
 
@@ -61,14 +66,13 @@ class spuzzleTree(spuzzle):
                 c[1].__addDeep()
                 if c[1].min.distance < self.min.distance:
                     self.min = c[1].min
+                if c[1].maxdeep > self.maxdeep:
+                    self.maxdeep = c[1].maxdeep
     
     def addDeep(self, d):#增加一层遍历
         while d > 0:
             d -= 1
             self.__addDeep()
-    
-    def getmin(self):
-        return self.min
     
     def solvepuzzle(self):
         result = self
@@ -76,15 +80,13 @@ class spuzzleTree(spuzzle):
         d = 12
         while result.distance != 0:
             result.addDeep(d)
-            tmp = result.getmin()
+            tmp = result.min
             tmp.display()
             if tmp.distance == result.distance:
                 print("解谜失败")
                 break
             else:
                 result = tmp
-            result.display()
-        
         print("over")
         
 
@@ -118,7 +120,7 @@ class spuzzle_4X4(spuzzleTree):
             for j in [0,1,2,3]:
                 show[i][j] = (self.data2[i*4+j]+1)%16
         print(show)
-        print("distance %d prevstep %d"%(self.distance,self.prevstep))
+        print("deep %d distance %d prevstep %d"%(self.deep, self.distance, self.prevstep))
         print("................")
 
     def getsteps(self):
