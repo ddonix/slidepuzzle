@@ -17,13 +17,72 @@ class spuzzle:
         else:
             self.prevstep = prev 
     
+    def display(self):
+        raise NotImplementedError
+
+    def getsteps(self):
+        raise NotImplementedError
+    
     def getdistance(self):
         raise NotImplementedError
     
     def nextpuzzle(self, s, new):
         raise NotImplementedError
 
-class spuzzle_4X4(spuzzle):
+class spuzzleTree(spuzzle):
+    def __init__(self,p,dis, prev):
+        spuzzle.__init__(self, p, dis, prev)
+        self.deep = 1
+        self.child = [] 
+    
+    def printTree(self):#深度遍历
+        self.display()
+        print("deep %d"%self.deep)
+        for c in self.child:
+            c[1].printTree()
+    
+    def __addDeep(self):#增加一层遍历
+        if self.deep == 1:
+            steps = self.getsteps()
+            for s in steps:
+                c = self.newpuzzle(s)
+                self.child.append([s,c])
+            self.deep += 1
+        else:
+            for c in self.child:
+                c[1].__addDeep()
+            self.deep += 1
+    
+    def addDeep(self, d):#增加一层遍历
+        while d > 0:
+            d -= 1
+            self.__addDeep()
+    
+    def getmin(self):
+        if self.deep == 1:
+            return self
+        else:
+            r = self
+            for c in self.child:
+                rr = c[1].getmin()
+                if rr.distance < r.distance:
+                    r = rr
+                elif rr.distance == r.distance:
+                    r == rr
+            return r
+
+    def solvepuzzle(self):
+        result = self
+        
+        while result.distance != 0:
+            result.addDeep(10)
+        
+            result = result.getmin()
+            result.display()
+        print("solve")
+        
+
+class spuzzle_4X4(spuzzleTree):
     weight = np.empty([15],dtype='int32')
     weight[11] = weight[14] = 3
     weight[10] = 9
@@ -41,11 +100,47 @@ class spuzzle_4X4(spuzzle):
     weight[0] =  729*729*9
 
     def __init__(self,p,dis, prev):
-        spuzzle.__init__(self, p, dis, prev)
+        spuzzleTree.__init__(self, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
         for v in np.arange(16):
             i = self.data[v]
             self.data2[i] = v
+    
+    def display(self):
+        show = np.empty([4,4], dtype='int32')
+        for i in [0,1,2,3]:
+            for j in [0,1,2,3]:
+                show[i][j] = (self.data2[i*4+j]+1)%16
+        print(show)
+        print("distance %d prevstep %d"%(self.distance,self.prevstep))
+        print("................")
+
+    def getsteps(self):
+        p = self.data[15] 
+        p0 = p/4
+        p1 = p%4
+        flag = [1,1,1,1]
+        if p0 == 0:
+            flag[0] = 0
+        if p0 == 3:
+            flag[1] = 0
+        if p1 == 0:
+            flag[2] = 0
+        if p1 == 3:
+            flag[3] = 0
+        if self.prevstep == 0:
+            flag[1] = 0
+        if self.prevstep == 1:
+            flag[0] = 0
+        if self.prevstep == 2:
+            flag[3] = 0
+        if self.prevstep == 3:
+            flag[2] = 0
+        steps = []
+        for i in [0,1,2,3]:
+            if flag[i] == 1:
+                steps.append(i)
+        return steps
     
     def getdistance(self):
         self.distance = 0
@@ -57,7 +152,7 @@ class spuzzle_4X4(spuzzle):
             j2 = p%4
             self.distance += (abs(i2-i1)+abs(j2-j1))*spuzzle_4X4.weight[v]
         return self.distance 
-    
+       
     def getdistanceChange(self, v, p1, p2):
         i = v/4
         j = v%4
@@ -70,118 +165,62 @@ class spuzzle_4X4(spuzzle):
         return d2-d1
 
 
-    def display(self):
-        show = np.empty([4,4], dtype='int32')
-        for i in [0,1,2,3]:
-            for j in [0,1,2,3]:
-                show[i][j] = (self.data2[i*4+j]+1)%16
-        print(show)
-        print("distance %d"%self.distance)
-        print("................")
-
-    def nextpuzzle(self, s, new):
-        nextp = self 
+    def move(self, s):
         p = self.data[15]
+        p2 = None
         if s == 0:
             if p > 3:
-                a = self.data2[p-4]
-                b = self.getdistanceChange(a,p-4,p)
-                
-                if new == True:
-                    tmp = np.array(self.data)
-                    tmp[15] = p-4
-                    tmp[a] = p
-                    d = self.distance + b
-
-                    nextp = spuzzle_4X4(tmp, dis=d, prev=s)
-                else:
-                    self.data[15] = p-4
-                    self.data[a] = p
-                    self.data2[p-4] = 15
-                    self.data2[p] = a
-                    self.distance += b
-                    self.prevstep = s
+                p2 = p-4
         
         if s == 1:
             if p < 12:
-                a = self.data2[p+4]
-                b = self.getdistanceChange(a,p+4,p)
-                
-                if new == True:
-                    tmp = np.array(self.data)
-                    tmp[15] = p+4
-                    tmp[a] = p
-                    d = self.distance + b
-
-                    nextp = spuzzle_4X4(tmp, dis=d, prev=s)
-                else:
-                    self.data[15] = p+4
-                    self.data[a] = p
-                    self.data2[p+4] = 15
-                    self.data2[p] = a
-                    self.distance += b
-                    self.prevstep = s
+                p2 = p+4
         
         if s == 2:
             if p%4 > 0:
-                a = self.data2[p-1]
-                b = self.getdistanceChange(a,p-1,p)
-                
-                if new == True:
-                    tmp = np.array(self.data)
-                    tmp[15] = p-1
-                    tmp[a] = p
-                    d = self.distance + b
+                p2 = p-1
 
-                    nextp = spuzzle_4X4(tmp, dis=d, prev=s)
-                else:
-                    self.data[15] = p-1
-                    self.data[a] = p
-                    self.data2[p-1] = 15
-                    self.data2[p] = a
-                    self.distance += b
-                    self.prevstep = s
-        
         if s == 3:
             if p%4 < 3:
-                a = self.data2[p+1]
-                b = self.getdistanceChange(a,p+1,p)
-                
-                if new == True:
-                    tmp = np.array(self.data)
-                    tmp[15] = p+1
-                    tmp[a] = p
-                    d = self.distance + b
+                p2 = p+1
 
-                    nextp = spuzzle_4X4(tmp, dis=d, prev=s)
-                else:
-                    self.data[15] = p+1
-                    self.data[a] = p
-                    self.data2[p+1] = 15
-                    self.data2[p] = a
-                    self.distance += b
-                    self.prevstep = s
-        
-        return nextp
-            
+        if p2 != None:
+            a = self.data2[p2]
+            b = self.getdistanceChange(a,p2,p)
+            self.data[15] = p2
+            self.data[a] = p
+            self.data2[p2] = 15
+            self.data2[p] = a
+            self.distance += b
+            self.prevstep = s
+    
+    def newpuzzle(self, s):
+        data = np.array(self.data)
+        result = spuzzle_4X4(data, self.distance, self.prevstep)
+        result.move(s)
+        return result
+
+    def ruffle(self, count):
+        while(count > 0):
+            p = self.data[15] 
+            p0 = p/4
+            p1 = p%4
+            s = random.randint(0,3)
+            if s == 0 and (self.prevstep == 1 or p0 == 0):
+                continue
+            if s == 1 and (self.prevstep  == 0 or p0 == 3):
+                continue
+            if s == 2 and (self.prevstep == 3 or p1 == 0):
+                continue
+            if s == 3 and (self.prevstep == 2 or p1 == 3):
+                continue
+            self.move(s)
+            count -= 1
+
 Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-p = spuzzle_4X4(Target, dis=None, prev=None)
+p = spuzzle_4X4(Target, dis=None, prev=4)
+p.ruffle(300)
+p.prevstep = 4
 p.display()
-p.nextpuzzle(0, False)
-p.display()
-p.nextpuzzle(0, False)
-p.display()
-p.nextpuzzle(1, False)
-p.display()
-p.nextpuzzle(1, False)
-p.display()
-p.nextpuzzle(2, False)
-p.display()
-p.nextpuzzle(2, False)
-p.display()
-p.nextpuzzle(0, False)
-p.display()
-p.nextpuzzle(0, False)
-p.display()
-p.nextpuzzle(3, False)
-p.display()
+print("开始解谜")
+p.solvepuzzle()
