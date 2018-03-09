@@ -4,6 +4,7 @@ import numpy as np
 import random
 import cPickle as pickle
 import os
+import sys
 
 class spuzzle:
     def __init__(self,p, dis=None, prev=None):
@@ -33,7 +34,7 @@ class spuzzle:
 
 class spuzzleTree(spuzzle):
     initsearch = 8
-    maxsearch  = 12
+    maxsearch  = 10
     weight = None
 
     def __init__(self,p,dis, prev):
@@ -146,9 +147,10 @@ class spuzzle_4X4(spuzzleTree):
         else:
             for i in np.arange(15):
                 spuzzle_4X4.weight[i] = 1
-        print("读取weight")
-        print(spuzzle_4X4.weight)
-
+            spuzzle_4X4.weight[0] = 9
+            spuzzle_4X4.weight[3] = 3
+            spuzzle_4X4.weight[12] = 3
+        
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
@@ -157,15 +159,13 @@ class spuzzle_4X4(spuzzleTree):
             self.data2[i] = v
     
     def optweight(self, parm):
+        w = np.zeros(16, dtype='int32')
         for tmp in parm:
-            for v in np.arange(15):
-                p = tmp.data[v]
-                i1 = v/4
-                j1 = v%4
-                i2 = p/4
-                j2 = p%4
-                spuzzle_4X4.weight[v] += abs(i1-i2)+abs(j1-j2)
-    
+            for v in np.arange(16):
+                if tmp.data[v] != v:
+                    w[v] += 1
+        print(w)
+        
     @staticmethod
     def randompuzzle():
         Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
@@ -291,15 +291,24 @@ class spuzzle_4X4(spuzzleTree):
             count -= 1
 
 def main():
-    spuzzle_4X4.readweight()
-    spuzzle_4X4.trainweight(10,1)
-    print("...学习后weight...")
-    print(spuzzle_4X4.weight)
-    print("...解谜...")
-    for i in np.arange(1):
+    if sys.argv[1] == 'read':
+        spuzzle_4X4.readweight()
+        print(spuzzle_4X4.weight)
+    elif sys.argv[1] == 'train':
+        spuzzle_4X4.readweight()
+        spuzzle_4X4.trainweight(50,1)
+        spuzzle_4X4.readweight()
+    elif sys.argv[1] == 'puzzle':
+        spuzzle_4X4.readweight()
+        print(spuzzle_4X4.weight)
+        print("...解谜...")
         p = spuzzle_4X4.randompuzzle()
         p.prevstep = 4
         print("...迷宫...")
         p.display()
         p.solvepuzzle()
+    else:
+        print("read")
+        print("train")
+        print("puzzle")
 main()
