@@ -35,6 +35,8 @@ class spuzzle:
 class spuzzleTree(spuzzle):
     initsearch = 8
     maxsearch  = 12
+    MaxDeep  = 200
+    
     weight = None
 
     def __init__(self,p,dis, prev):
@@ -106,6 +108,8 @@ class spuzzleTree(spuzzle):
         result = self
         
         while result.distance != 0:
+            if result.deep >= spuzzle_4X4.MaxDeep:
+                break
             while True:
                 result.addDeep(1)
                 if result.maxdeep - result.deep < spuzzleTree.initsearch:
@@ -113,27 +117,28 @@ class spuzzleTree(spuzzle):
                 else:
                     break
                 
-            tmp = result.min
-            
-            if tmp.distance == result.distance:
+            if result.min.distance == result.distance:
                 while True:
                     result.addDeep(1)
-                    tmp = result.min
-                    if tmp.distance < result.distance:
+                    if result.min.distance < result.distance:
                         break
                     elif result.maxdeep - result.deep == spuzzleTree.maxsearch:
                         break
                     else:
                         continue
-
-            if tmp.distance == result.distance:
-                print("解谜失败")
-                return tmp
+            
+            if result.min.distance == result.distance:
+                result = result.father
+                continue
             else:
-                result = tmp
+                result = result.min
                 result.display()
-        print("over")
-        return None
+        
+        if result.distance != 0:
+            print("search max deep.error")
+            return result
+        else:
+            return None
         
 class spuzzle_4X4(spuzzleTree):
     
@@ -147,21 +152,22 @@ class spuzzle_4X4(spuzzleTree):
         else:
             for i in np.arange(15):
                 spuzzle_4X4.weight[i] = 1
-            spuzzle_4X4.weight[11] = 1
-            spuzzle_4X4.weight[14] = 1
-            spuzzle_4X4.weight[10] = 3
-            spuzzle_4X4.weight[13] = 3**2
-            spuzzle_4X4.weight[9] = 3**3
-            spuzzle_4X4.weight[12] = 3**4
-            spuzzle_4X4.weight[8] = 3**5
-            spuzzle_4X4.weight[7] = 3**6
-            spuzzle_4X4.weight[6] = 3**7
-            spuzzle_4X4.weight[5] = 3**8
-            spuzzle_4X4.weight[4] = 3**9
-            spuzzle_4X4.weight[3] = 3**10
-            spuzzle_4X4.weight[2] = 3**11
-            spuzzle_4X4.weight[1] = 3**12
-            spuzzle_4X4.weight[0] = 3**13
+
+            spuzzle_4X4.weight[11] = 3
+            spuzzle_4X4.weight[14] = 3
+            spuzzle_4X4.weight[10] = 9
+            spuzzle_4X4.weight[13] = 27
+            spuzzle_4X4.weight[9] = 81
+            spuzzle_4X4.weight[12] = 243
+            spuzzle_4X4.weight[8] = 729
+            spuzzle_4X4.weight[7] = 729*3
+            spuzzle_4X4.weight[6] = 729*9
+            spuzzle_4X4.weight[5] = 729*27
+            spuzzle_4X4.weight[4] = 729*81
+            spuzzle_4X4.weight[3] = 729*243
+            spuzzle_4X4.weight[2] = 729*729
+            spuzzle_4X4.weight[1] = 729*729*3
+            spuzzle_4X4.weight[0] = 729*729*9
         
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
