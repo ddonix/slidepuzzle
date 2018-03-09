@@ -47,6 +47,9 @@ class spuzzleTree(spuzzle):
         self.min = self
         self.maxdeep = 1
         
+    def equal(self, t):
+        return self.data == t.data
+    
     def writeweight(self):
         raise NotImplementedError
     
@@ -125,7 +128,7 @@ class spuzzleTree(spuzzle):
     
     def solvepuzzle(self):
         result = self
-        
+        cutTrees  = []
         while result.distance != 0:
             if result.deep >= spuzzle_4X4.MaxDeep:
                 break
@@ -145,13 +148,19 @@ class spuzzleTree(spuzzle):
                         break
                     continue
             
-            if result.min.distance < result.distance:
+            fa = None
+            if result.min.distance >= result.distance:
+                fa = result.father
+            for c in cutTrees:
+                if c.equal(result.min) == True:
+                    fa = result.father       
+            if fa == None:
                 result = result.min
                 result.display()
             else:                
                 print("back off.")
-                fa = result.father
                 fa.cutTree(result)
+                cutTrees.append(result)
                 result = fa
         
         if result.distance != 0:
@@ -188,6 +197,8 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight[2] = 729*729
             spuzzle_4X4.weight[1] = 729*729*3
             spuzzle_4X4.weight[0] = 729*729*9
+            for i in np.arange(15):
+                spuzzle_4X4.weight[i] = 1
     
     def __init__(self, fa, p, dis, prev):
         spuzzleTree.__init__(self, fa, p, dis, prev)
@@ -195,6 +206,9 @@ class spuzzle_4X4(spuzzleTree):
         for v in np.arange(16):
             i = self.data[v]
             self.data2[i] = v
+    
+    def equal(self, t):
+        return (self.data == t.data).all()
     
     def optweight(self, parm):
         w = np.zeros(16, dtype='int32')
