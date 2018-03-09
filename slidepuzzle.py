@@ -34,7 +34,7 @@ class spuzzle:
 
 class spuzzleTree(spuzzle):
     initsearch = 8
-    maxsearch  = 12
+    maxsearch  = 11
     MaxDeep  = 200
     
     weight = None
@@ -46,6 +46,7 @@ class spuzzleTree(spuzzle):
         self.father = self
         self.min = self
         self.maxdeep = 1
+        self.cutflag = 0
         
     def writeweight(self):
         raise NotImplementedError
@@ -93,7 +94,7 @@ class spuzzleTree(spuzzle):
         else:
             for c in self.child:
                 c.__addDeep()
-                if c.min.distance < self.min.distance:
+                if c.min.distance < self.min.distance and c.cutflag == 0:
                     self.min = c.min
                 if c.maxdeep > self.maxdeep:
                     self.maxdeep = c.maxdeep
@@ -124,21 +125,21 @@ class spuzzleTree(spuzzle):
                         break
                     elif result.maxdeep - result.deep == spuzzleTree.maxsearch:
                         break
-                    else:
-                        continue
+                    continue
             
-            if result.min.distance == result.distance:
-                print("back off.")
-                result = result.father
-                continue
-            else:
+            if result.min.distance < result.distance:
                 result = result.min
                 result.display()
+            else:                
+                print("back off.")
+                result.cutflag = 1
+                result = result.father
         
         if result.distance != 0:
-            print("search max deep.error")
+            print("solve puzzle error")
             return result
         else:
+            print("solve puzzle success")
             return None
         
 class spuzzle_4X4(spuzzleTree):
@@ -151,8 +152,6 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight = pickle.load(f)
             f.close()
         else:
-            for i in np.arange(15):
-                spuzzle_4X4.weight[i] = 1
             spuzzle_4X4.weight[11] = 3
             spuzzle_4X4.weight[14] = 3
             spuzzle_4X4.weight[10] = 9
@@ -168,6 +167,8 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight[2] = 729*729
             spuzzle_4X4.weight[1] = 729*729*3
             spuzzle_4X4.weight[0] = 729*729*9
+            for i in np.arange(15):
+                spuzzle_4X4.weight[i] = 1
     
     
     def __init__(self,p,dis, prev):
