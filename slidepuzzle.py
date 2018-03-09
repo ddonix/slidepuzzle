@@ -35,7 +35,7 @@ class spuzzle:
 class spuzzleTree(spuzzle):
     initsearch = 8
     maxsearch  = 11
-    MaxDeep  = 200
+    MaxDeep  = 500
     
     weight = None
 
@@ -130,7 +130,7 @@ class spuzzleTree(spuzzle):
         result = self
         cutTrees  = []
         while result.distance != 0:
-            if result.deep >= spuzzle_4X4.MaxDeep:
+            if result.deep >= spuzzleTree.MaxDeep:
                 break
             while True:
                 result.addDeep(1)
@@ -182,23 +182,17 @@ class spuzzle_4X4(spuzzleTree):
         else:
             for i in np.arange(15):
                 spuzzle_4X4.weight[i] = 1
-            spuzzle_4X4.weight[11] = 3
-            spuzzle_4X4.weight[14] = 3
-            spuzzle_4X4.weight[10] = 9
-            spuzzle_4X4.weight[13] = 27
-            spuzzle_4X4.weight[9] = 81
-            spuzzle_4X4.weight[12] = 243
-            spuzzle_4X4.weight[8] = 729
-            spuzzle_4X4.weight[7] = 729*3
-            spuzzle_4X4.weight[6] = 729*9
-            spuzzle_4X4.weight[5] = 729*27
-            spuzzle_4X4.weight[4] = 729*81
-            spuzzle_4X4.weight[3] = 729*243
-            spuzzle_4X4.weight[2] = 729*729
-            spuzzle_4X4.weight[1] = 729*729*3
-            spuzzle_4X4.weight[0] = 729*729*9
-            for i in np.arange(15):
-                spuzzle_4X4.weight[i] = 1
+            spuzzle_4X4.weight[0] = 1000
+            spuzzle_4X4.weight[1] = 800
+            spuzzle_4X4.weight[2] = 600
+            spuzzle_4X4.weight[3] = 400
+            spuzzle_4X4.weight[4] = 100
+            spuzzle_4X4.weight[8] = 80
+            spuzzle_4X4.weight[12] = 60
+            spuzzle_4X4.weight[5] = 10
+            spuzzle_4X4.weight[6] = 8
+            spuzzle_4X4.weight[7] = 6
+
     
     def __init__(self, fa, p, dis, prev):
         spuzzleTree.__init__(self, fa, p, dis, prev)
@@ -342,6 +336,178 @@ class spuzzle_4X4(spuzzleTree):
             self.move(s)
             count -= 1
 
+class spuzzle_5X5(spuzzleTree):
+    
+    @staticmethod
+    def readweight():
+        spuzzle_5X5.weight = np.empty([24],dtype='int32')
+        if os.path.exists('./puzzle55weight.txt'):
+            f = open('./puzzle55weight.txt', 'r')
+            spuzzle_5X5.weight = pickle.load(f)
+            f.close()
+        else:
+            for i in np.arange(24):
+                spuzzle_5X5.weight[i] = 1
+            spuzzle_5X5.weight[0] = 100000
+            spuzzle_5X5.weight[1] = 800000
+            spuzzle_5X5.weight[2] = 600000
+            spuzzle_5X5.weight[3] = 400000
+            spuzzle_5X5.weight[4] = 200000
+            spuzzle_5X5.weight[5] = 100000
+            spuzzle_5X5.weight[6] = 80000
+            spuzzle_5X5.weight[7] = 60000
+            spuzzle_5X5.weight[8] = 40000
+            spuzzle_5X5.weight[9] = 20000
+            spuzzle_5X5.weight[10] = 10000
+            spuzzle_5X5.weight[15] = 8000
+            spuzzle_5X5.weight[20] = 6000
+            spuzzle_5X5.weight[11] = 1000
+            spuzzle_5X5.weight[16] = 800
+            spuzzle_5X5.weight[21] = 600
+
+    
+    def __init__(self, fa, p, dis, prev):
+        spuzzleTree.__init__(self, fa, p, dis, prev)
+        self.data2 = np.empty([25], dtype='int32')
+        for v in np.arange(25):
+            i = self.data[v]
+            self.data2[i] = v
+    
+    def equal(self, t):
+        return (self.data == t.data).all()
+    
+    def optweight(self, parm):
+        w = np.zeros(25, dtype='int32')
+        for tmp in parm:
+            for v in np.arange(25):
+                if tmp.data[v] != v:
+                    w[v] += 1
+        print(w)
+        
+    @staticmethod
+    def randompuzzle():
+        Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+        p = spuzzle_5X5(None, Target, dis=None, prev=4)
+        p.ruffle(600)
+        p.prevstep = 4
+        return p
+
+    def writeweight(self):
+        f = open('./puzzle55weight.txt', 'wb')
+        pickle.dump(spuzzle_5X5.weight, f)
+        f.close()
+        return
+
+    def display(self):
+        show = np.empty([5,5], dtype='int32')
+        for i in [0,1,2,3,4]:
+            for j in [0,1,2,3,4]:
+                show[i][j] = (self.data2[i*5+j]+1)%25
+        print(show)
+        print("deep %d distance %d prevstep %d"%(self.deep, self.distance, self.prevstep))
+        print("................")
+
+    def getsteps(self):
+        p = self.data[24]
+        p0 = p/5
+        p1 = p%5
+        flag = [1,1,1,1]
+        if p0 == 0:
+            flag[0] = 0
+        if p0 == 3:
+            flag[1] = 0
+        if p1 == 0:
+            flag[2] = 0
+        if p1 == 3:
+            flag[3] = 0
+        if self.prevstep == 0:
+            flag[1] = 0
+        if self.prevstep == 1:
+            flag[0] = 0
+        if self.prevstep == 2:
+            flag[3] = 0
+        if self.prevstep == 3:
+            flag[2] = 0
+        steps = []
+        for i in [0,1,2,3]:
+            if flag[i] == 1:
+                steps.append(i)
+        return steps
+    
+    def getdistance(self):
+        self.distance = 0
+        for v in np.arange(24):
+            p = self.data[v]
+            i1 = v/5
+            j1 = v%5
+            i2 = p/5
+            j2 = p%5
+            self.distance += (abs(i2-i1)+abs(j2-j1))*spuzzle_5X5.weight[v]
+        return self.distance 
+       
+    def getdistanceChange(self, v, p1, p2):
+        i = v/5
+        j = v%5
+        i1 = p1/5
+        j1 = p1%5
+        i2 = p2/5
+        j2 = p2%5
+        d1 = (abs(i1-i)+abs(j1-j))*spuzzle_5X5.weight[v]
+        d2 = (abs(i2-i)+abs(j2-j))*spuzzle_5X5.weight[v]
+        return d2-d1
+
+    def move(self, s):
+        p = self.data[24]
+        p2 = None
+        if s == 0:
+            if p > 4:
+                p2 = p-5
+        
+        if s == 1:
+            if p < 20:
+                p2 = p+5
+        
+        if s == 2:
+            if p%5 > 0:
+                p2 = p-1
+
+        if s == 3:
+            if p%5 < 4:
+                p2 = p+1
+
+        if p2 != None:
+            a = self.data2[p2]
+            b = self.getdistanceChange(a,p2,p)
+            self.data[24] = p2
+            self.data[a] = p
+            self.data2[p2] = 24
+            self.data2[p] = a
+            self.distance += b
+            self.prevstep = s
+    
+    def newpuzzle(self, s):
+        data = np.array(self.data)
+        result = spuzzle_5X5(self, data, self.distance, self.prevstep)
+        result.move(s)
+        return result
+
+    def ruffle(self, count):
+        while(count > 0):
+            p = self.data[24] 
+            p0 = p/5
+            p1 = p%5
+            s = random.randint(0,3)
+            if s == 0 and (self.prevstep == 1 or p0 == 0):
+                continue
+            if s == 1 and (self.prevstep  == 0 or p0 == 3):
+                continue
+            if s == 2 and (self.prevstep == 3 or p1 == 0):
+                continue
+            if s == 3 and (self.prevstep == 2 or p1 == 3):
+                continue
+            self.move(s)
+            count -= 1
+
 def main():
     if len(sys.argv) == 1:
         print("read")
@@ -364,17 +530,11 @@ def main():
         p.display()
         p.solvepuzzle()
     else:
-        spuzzle_4X4.readweight()
-        p = spuzzle_4X4.randompuzzle()
+        spuzzle_5X5.readweight()
+        print(spuzzle_5X5.weight)
+        p = spuzzle_5X5.randompuzzle()
+        p.prevstep = 4
         p.display()
-        p.addDeep(10)
-        p.min.display()
-        p.min.addDeep(10)
-        p.min.min.display()
-        p.min.min.addDeep(10)
-        p.min.min.min.display()
-        p.min.display()       
-        p.min.father.cutTree(p.min)
-        p.min.display()       
+        p.solvepuzzle()
 
 main()
