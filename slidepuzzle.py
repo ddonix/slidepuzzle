@@ -5,7 +5,7 @@ import random
 import cPickle as pickle
 import os
 import sys
-
+import slidegui as sgui
 class spuzzle:
     def __init__(self,p, dis=None, prev=None):
         self.data = p
@@ -291,7 +291,11 @@ class spuzzle_4X4(spuzzleTree):
             count -= 1
 
 def main():
-    if sys.argv[1] == 'read':
+    if len(sys.argv) == 1:
+        print("read")
+        print("train")
+        print("puzzle")
+    elif sys.argv[1] == 'read':
         spuzzle_4X4.readweight()
         print(spuzzle_4X4.weight)
     elif sys.argv[1] == 'train':
