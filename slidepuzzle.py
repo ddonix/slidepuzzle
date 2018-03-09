@@ -128,6 +128,7 @@ class spuzzleTree(spuzzle):
                         continue
             
             if result.min.distance == result.distance:
+                print("back off.")
                 result = result.father
                 continue
             else:
@@ -152,7 +153,6 @@ class spuzzle_4X4(spuzzleTree):
         else:
             for i in np.arange(15):
                 spuzzle_4X4.weight[i] = 1
-
             spuzzle_4X4.weight[11] = 3
             spuzzle_4X4.weight[14] = 3
             spuzzle_4X4.weight[10] = 9
@@ -168,7 +168,8 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight[2] = 729*729
             spuzzle_4X4.weight[1] = 729*729*3
             spuzzle_4X4.weight[0] = 729*729*9
-        
+    
+    
     def __init__(self,p,dis, prev):
         spuzzleTree.__init__(self, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
