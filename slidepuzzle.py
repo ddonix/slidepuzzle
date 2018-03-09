@@ -39,14 +39,13 @@ class spuzzleTree(spuzzle):
     
     weight = None
 
-    def __init__(self,p,dis, prev):
+    def __init__(self, fa, p, dis, prev):
         spuzzle.__init__(self, p, dis, prev)
         self.deep = 1
         self.child = []
-        self.father = self
+        self.father = fa
         self.min = self
         self.maxdeep = 1
-        self.cutflag = 0
         
     def writeweight(self):
         raise NotImplementedError
@@ -94,17 +93,36 @@ class spuzzleTree(spuzzle):
         else:
             for c in self.child:
                 c.__addDeep()
-                if c.min.distance < self.min.distance and c.cutflag == 0:
+                if c.min.distance < self.min.distance:
                     self.min = c.min
                 if c.maxdeep > self.maxdeep:
                     self.maxdeep = c.maxdeep
+        
+        f = self.father
+        while f != None:
+            if f.min.distance > self.min.distance:
+                f.min = self.min
+            f = f.father
     
     def addDeep(self, d):#增加一层遍历
         while d > 0:
             d -= 1
             self.__addDeep()
-    
 
+    def cutTree(self, ch):
+        self.child.remove(ch)
+        self.min = self
+        for c in self.child:
+            if self.min == None:
+                self.min = c.min
+            elif c.min.distance < self.min.distance:
+                self.min = c.min
+        
+        fa = self.father
+        while fa != None:
+            fa.min = self.min
+            fa = fa.father
+    
     def solvepuzzle(self):
         result = self
         
@@ -132,8 +150,9 @@ class spuzzleTree(spuzzle):
                 result.display()
             else:                
                 print("back off.")
-                result.cutflag = 1
-                result = result.father
+                fa = result.father
+                fa.cutTree(result)
+                result = fa
         
         if result.distance != 0:
             print("solve puzzle error")
@@ -152,6 +171,8 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight = pickle.load(f)
             f.close()
         else:
+            for i in np.arange(15):
+                spuzzle_4X4.weight[i] = 1
             spuzzle_4X4.weight[11] = 3
             spuzzle_4X4.weight[14] = 3
             spuzzle_4X4.weight[10] = 9
@@ -167,12 +188,9 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight[2] = 729*729
             spuzzle_4X4.weight[1] = 729*729*3
             spuzzle_4X4.weight[0] = 729*729*9
-            for i in np.arange(15):
-                spuzzle_4X4.weight[i] = 1
     
-    
-    def __init__(self,p,dis, prev):
-        spuzzleTree.__init__(self, p, dis, prev)
+    def __init__(self, fa, p, dis, prev):
+        spuzzleTree.__init__(self, fa, p, dis, prev)
         self.data2 = np.empty([16], dtype='int32')
         for v in np.arange(16):
             i = self.data[v]
@@ -189,7 +207,7 @@ class spuzzle_4X4(spuzzleTree):
     @staticmethod
     def randompuzzle():
         Target = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-        p = spuzzle_4X4(Target, dis=None, prev=4)
+        p = spuzzle_4X4(None, Target, dis=None, prev=4)
         p.ruffle(300)
         p.prevstep = 4
         return p
@@ -289,7 +307,7 @@ class spuzzle_4X4(spuzzleTree):
     
     def newpuzzle(self, s):
         data = np.array(self.data)
-        result = spuzzle_4X4(data, self.distance, self.prevstep)
+        result = spuzzle_4X4(self, data, self.distance, self.prevstep)
         result.move(s)
         return result
 
@@ -332,7 +350,17 @@ def main():
         p.display()
         p.solvepuzzle()
     else:
-        print("read")
-        print("train")
-        print("puzzle")
+        spuzzle_4X4.readweight()
+        p = spuzzle_4X4.randompuzzle()
+        p.display()
+        p.addDeep(10)
+        p.min.display()
+        p.min.addDeep(10)
+        p.min.min.display()
+        p.min.min.addDeep(10)
+        p.min.min.min.display()
+        p.min.display()       
+        p.min.father.cutTree(p.min)
+        p.min.display()       
+
 main()
