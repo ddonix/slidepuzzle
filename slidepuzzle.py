@@ -548,10 +548,13 @@ def main():
     elif sys.argv[1] == 'ipuzzle':
         idata = np.empty([16], dtype='int32')
         i = 0
-        for tmp in [0,1,2,3]:
-            for n in raw_input().split(' '):
-                idata[(int(n)+15)%16] = i
-                i += 1
+        try:
+            for tmp in [0,1,2,3]:
+                for n in raw_input().split(' '):
+                    idata[(int(n)+15)%16] = i
+                    i += 1
+        except ValueError as err:
+            print("input right format")
         
         p = spuzzle_4X4(None, idata, None, 4)
         print("...迷宫...")
