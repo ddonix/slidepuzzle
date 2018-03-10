@@ -5,7 +5,6 @@ import random
 import cPickle as pickle
 import os
 import sys
-import slidegui as sgui
 class spuzzle:
     def __init__(self,p, dis=None, prev=None):
         self.data = p
@@ -80,7 +79,7 @@ class spuzzleTree(spuzzle):
         for c in self.child:
             c.printTree()
 
-    def __addDeep(self):#增加一层遍历
+    def __search(self):#增加一层遍历
         if self.child == []:
             steps = self.getsteps()
             for s in steps:
@@ -95,7 +94,7 @@ class spuzzleTree(spuzzle):
                 self.child.append(c)
         else:
             for c in self.child:
-                c.__addDeep()
+                c.__search()
                 if c.min.distance < self.min.distance:
                     self.min = c.min
                 if c.maxdeep > self.maxdeep:
@@ -107,10 +106,10 @@ class spuzzleTree(spuzzle):
                 f.min = self.min
             f = f.father
     
-    def addDeep(self, d):#增加一层遍历
+    def search(self, d):#增加一层遍历
         while d > 0:
             d -= 1
-            self.__addDeep()
+            self.__search()
 
     def cutTree(self, ch):
         self.child.remove(ch)
@@ -133,7 +132,7 @@ class spuzzleTree(spuzzle):
             if result.deep >= spuzzleTree.MaxDeep:
                 break
             while True:
-                result.addDeep(1)
+                result.search(1)
                 if result.maxdeep - result.deep < spuzzleTree.initsearch:
                     continue
                 else:
@@ -141,7 +140,7 @@ class spuzzleTree(spuzzle):
                 
             if result.min.distance == result.distance:
                 while True:
-                    result.addDeep(1)
+                    result.search(1)
                     if result.min.distance < result.distance:
                         break
                     elif result.maxdeep - result.deep == spuzzleTree.maxsearch:
@@ -169,6 +168,18 @@ class spuzzleTree(spuzzle):
         else:
             print("solve puzzle success")
             return None
+
+    def displayAnswer(self):
+        s = self.min
+        if s.distance != 0:
+            print("solve puzzle error.I am sorry!")
+            return
+        li = []
+        while s!= None:
+            li.insert(0,s)
+            s = s.father
+        for s in li:
+            s.display()
         
 class spuzzle_4X4(spuzzleTree):
     
@@ -509,10 +520,14 @@ class spuzzle_5X5(spuzzleTree):
             count -= 1
 
 def main():
+    spuzzle_4X4.readweight()
+    print(spuzzle_4X4.weight)
+    
     if len(sys.argv) == 1:
         print("read")
         print("train")
-        print("puzzle")
+        print("rpuzzle")
+        print("ipuzzle")
     elif sys.argv[1] == 'read':
         spuzzle_4X4.readweight()
         print(spuzzle_4X4.weight)
@@ -520,7 +535,7 @@ def main():
         spuzzle_4X4.readweight()
         spuzzle_4X4.trainweight(50,1)
         spuzzle_4X4.readweight()
-    elif sys.argv[1] == 'puzzle':
+    elif sys.argv[1] == 'rpuzzle':
         spuzzle_4X4.readweight()
         print(spuzzle_4X4.weight)
         print("...解谜...")
@@ -529,7 +544,26 @@ def main():
         print("...迷宫...")
         p.display()
         p.solvepuzzle()
-    else:
+        p.displayAnswer()
+    elif sys.argv[1] == 'ipuzzle':
+        idata = np.empty([16], dtype='int32')
+        i = 0
+        for tmp in [0,1,2,3]:
+            for n in raw_input().split(' '):
+                idata[(int(n)+15)%16] = i
+                i += 1
+        
+        p = spuzzle_4X4(None, idata, None, 4)
+        print("...迷宫...")
+        p.display()
+        p.solvepuzzle()
+        p.displayAnswer()
+    
+    elif sys.argv[1] == 'debug':
+        spuzzle_4X4.readweight()
+        p = spuzzle_4X4.randompuzzle()
+        p.displayAnswer()
+    elif sys.argv[1] == '55':
         spuzzle_5X5.readweight()
         print(spuzzle_5X5.weight)
         p = spuzzle_5X5.randompuzzle()
