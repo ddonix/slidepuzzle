@@ -14,6 +14,7 @@ class spuzzleTree:
 
     def __init__(self, da, dis):
         self.data = da
+        self.data2 = None
         
         if dis == None:
             self.distance = self.getdistance()
@@ -29,10 +30,14 @@ class spuzzleTree:
         self.min = self
         self.maxdeep = 1
     
-    def move(self,s):
-        raise NotImplementedError
         
     def copypuzzle(self):
+        da = self.data.copy()
+        result = spuzzle_4X4(da, self.distance)
+        result.data2 = self.data2.copy()
+        return result
+    
+    def move(self,s):
         raise NotImplementedError
     
     def getsteps(self):
@@ -176,12 +181,6 @@ class spuzzleTree:
             s.display()
         
 class spuzzle_4X4(spuzzleTree):
-    initsearch = 8      #一次最小搜索深度
-    maxsearch  = 12     #一次最大搜索深度
-    MaxDeep  = 500      #总最大搜索深度
-    weight = None       #比较权重       这4个参数都需要设定，并可以学习(高级)
-
-    
     @staticmethod
     def readweight():
         spuzzle_4X4.weight = np.empty([15],dtype='int32')
@@ -203,7 +202,6 @@ class spuzzle_4X4(spuzzleTree):
             spuzzle_4X4.weight[6] = 8
             spuzzle_4X4.weight[7] = 6
 
-    
     def __init__(self, da, dis):
         spuzzleTree.__init__(self, da, dis)
         self.data2 = np.empty([16], dtype='int32')
@@ -211,11 +209,6 @@ class spuzzle_4X4(spuzzleTree):
             i = self.data[v]
             self.data2[i] = v
     
-    def copypuzzle(self):
-        da = self.data.copy()
-        result = spuzzle_4X4(da, self.distance)
-        result.data2 = self.data2.copy()
-        return result
     
     def equal(self, t):
         return (self.data == t.data).all()
@@ -233,7 +226,6 @@ class spuzzle_4X4(spuzzleTree):
         Target = np.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
         p = spuzzle_4X4(Target, dis=None)
         p.ruffle(300)
-        p.prevstep = 4
         return p
 
     def writeweight(self):
@@ -243,12 +235,13 @@ class spuzzle_4X4(spuzzleTree):
         return
 
     def display(self):
+        step = {0:"up", 1:"down", 2:"left", 3:"right", None:"init"}
         show = np.empty([4,4], dtype='int32')
         for i in [0,1,2,3]:
             for j in [0,1,2,3]:
                 show[i][j] = (self.data2[i*4+j]+1)%16
         print(show)
-        print("deep %d distance %d prevstep %d"%(self.deep, self.distance, self.prevstep))
+        print("deep %d distance %d prevstep %s"%(self.deep, self.distance, step[self.prevstep]))
         print("................")
 
     def getsteps(self):
@@ -351,27 +344,27 @@ class spuzzle_4X4(spuzzleTree):
             count -= 1
 
 def main():
-    spuzzle_4X4.readweight()
-    print(spuzzle_4X4.weight)
+    if len(sys.argv) == 1: 
+        print("read  读取权重")
+        print("train 学习权重")
+        print("rpuzzle  随机生成迷宫解迷")
+        print("ipuzzle 输入迷宫解迷")
+        return
     
-    if len(sys.argv) == 1:
-        print("read")
-        print("train")
-        print("rpuzzle")
-        print("ipuzzle")
-    elif sys.argv[1] == 'read':
-        spuzzle_4X4.readweight()
+    spuzzle_4X4.readweight()
+    if sys.argv[1] == 'read':
+        print("weight")
         print(spuzzle_4X4.weight)
     elif sys.argv[1] == 'train':
-        spuzzle_4X4.readweight()
-        spuzzle_4X4.trainweight(50,1)
-        spuzzle_4X4.readweight()
-    elif sys.argv[1] == 'rpuzzle':
-        spuzzle_4X4.readweight()
+        print("学习前weight")
         print(spuzzle_4X4.weight)
-        print("...解谜...")
+        spuzzle_4X4.trainweight(50,1)
+        print("学习后weight")
+        print(spuzzle_4X4.weight) 
+    elif sys.argv[1] == 'rpuzzle':
+        print("...随机生成迷宫解迷...")
         p = spuzzle_4X4.randompuzzle()
-        p.prevstep = 4
+        p.prevstep = None
         print("...迷宫...")
         p.display()
         p.solvepuzzle()
@@ -387,22 +380,15 @@ def main():
         except ValueError as err:
             print("input right format")
         
-        p = spuzzle_4X4(None, idata, None, 4)
+        p = spuzzle_4X4(idata, None)
         print("...迷宫...")
         p.display()
         p.solvepuzzle()
         p.displayAnswer()
-    
-    elif sys.argv[1] == 'debug':
-        spuzzle_4X4.readweight()
-        p = spuzzle_4X4.randompuzzle()
-        p.displayAnswer()
-    elif sys.argv[1] == '55':
-        spuzzle_5X5.readweight()
-        print(spuzzle_5X5.weight)
-        p = spuzzle_5X5.randompuzzle()
-        p.prevstep = 4
-        p.display()
-        p.solvepuzzle()
-
+    else:
+        print("read  读取权重")
+        print("train 学习权重")
+        print("rpuzzle  随机生成迷宫解迷")
+        print("ipuzzle 输入迷宫解迷")
+    return
 main()
